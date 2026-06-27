@@ -29,3 +29,7 @@ For repo setup, see [`DEVELOPER.md`](DEVELOPER.md).
   serve every year.
 - Each tool follows a `src/` + `tests/` layout with a `README.md`; see
   `ScheduleFA/AGENTS.md` for the coding and testing conventions.
+
+## License
+
+Released under the [MIT License](LICENSE).
