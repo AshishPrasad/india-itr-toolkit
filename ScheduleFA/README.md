@@ -89,6 +89,18 @@ standard grouping (`₹1,234,567.89`).
 > daily rates can be sourced from
 > [`sahilgupta/sbi-fx-ratekeeper`](https://github.com/sahilgupta/sbi-fx-ratekeeper).
 
+Worked example (`dividends.xlsx`):
+
+| Date       | Total Dividend (USD) | USD -> INR (TT Buy SBI) |
+| ---------- | -------------------- | ----------------------- |
+| 2025-02-15 | 100.00               | ₹80.00                  |
+| 2025-05-20 | 100.00               | ₹85.00                  |
+| 2025-08-20 | 100.00               | ₹90.00                  |
+| 2025-11-20 | 100.00               | ₹95.00                  |
+
+The tool computes `INR = USD × rate` per row → ₹8,000 + ₹8,500 + ₹9,000 + ₹9,500
+= **₹35,000** total dividend to allocate.
+
 ### 2. Stock ledger file
 
 One row per transaction. Default column headers:
@@ -102,6 +114,18 @@ One row per transaction. Default column headers:
 
 A `Sell` points at the lot it reduces and may be smaller than the lot
 (partial sell).
+
+Worked example (`ledger.xlsx`):
+
+| Date       | Buy/Sell | Lot number | Quantity |
+| ---------- | -------- | ---------- | -------- |
+| 2025-01-01 | Buy      | 1          | 10       |
+| 2025-05-01 | Buy      | 2          | 10       |
+| 2025-08-01 | Sell     | 1          | 5        |
+
+Lot 1 is held in full for the first two dividends, then halved (5 of 10 sold)
+before the last two; lot 2 is bought just before the second dividend. Running
+this against the dividend example above yields the [output](#output) below.
 
 ---
 
@@ -146,7 +170,7 @@ An Excel workbook with one row per lot followed by a bold total row. Columns:
 The bold `Total` row sums `Net Held Qty` and `Dividend Contribution (INR)`; the
 contribution total equals the dividend allocated across all lots.
 
-Worked example:
+Worked example (the result of running the dividend and ledger examples above):
 
 | Lot number | Net Held Qty | Dividend Contribution (INR) |
 | ---------- | ------------ | --------------------------- |
