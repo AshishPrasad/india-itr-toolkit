@@ -9,24 +9,42 @@ from .parsing import norm
 # A ColumnSpec describes how to find one logical field in a header row:
 #   explicit      -- exact header name supplied by the user (highest priority)
 #   default_exact -- the default exact header name to try next
-#   aliases       -- substrings to match as a last resort
+#   aliases       -- patterns matched against header text (specific ones win)
 ColumnSpec = tuple  # (explicit, default_exact, [aliases])
 
 
 def resolve_column(header_map, spec):
     """Resolve a single field to a column index using a header lookup map.
 
-    ``header_map`` maps normalised header text -> column index.
+    ``header_map`` maps normalised header text -> column index. Resolution order:
+
+    1. Explicit user override (exact match) — highest priority.
+    2. Exact normalised equality against ``default_exact`` or any alias. Patterns
+       are tried in declaration order (most specific first), so an exact
+       ``"acquisition date"`` column wins over a broad ``"date"`` alias.
+    3. Substring fallback for headers that carry extra qualifiers, trying the
+       **longest (most specific) pattern first** so a broad single-word alias
+       (e.g. ``"date"``, ``"cost"``, ``"lot"``) never pre-empts a more specific
+       one on an earlier column.
+
     Returns the column index, or None if not found.
     """
     explicit, default_exact, aliases = spec
     if explicit:
         return header_map.get(norm(explicit))
-    if norm(default_exact) in header_map:
-        return header_map[norm(default_exact)]
-    for header_text, col in header_map.items():
-        if any(norm(a) in header_text for a in aliases):
-            return col
+
+    candidates = [norm(default_exact)] + [norm(a) for a in aliases]
+
+    # Pass 1: exact normalised equality, specific patterns first.
+    for pattern in candidates:
+        if pattern in header_map:
+            return header_map[pattern]
+
+    # Pass 2: substring fallback, longest (most specific) pattern first.
+    for pattern in sorted(candidates, key=len, reverse=True):
+        for header_text, col in header_map.items():
+            if pattern in header_text:
+                return col
     return None
 
 

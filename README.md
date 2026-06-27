@@ -4,16 +4,18 @@ A collection of small, self-contained tools to help prepare **Income Tax Return
 (ITR)** filings in India. Each ITR schedule lives in its own top-level folder so
 the tools can evolve independently while sharing a common home.
 
-> **Privacy:** Real workbooks may contain personal financial data. Do **not**
-> copy real values (amounts, holdings, totals, account details) into source
-> code, tests, documentation, commit messages, or logs. Tests must use synthetic
-> sample data only.
+## Privacy
+
+Real workbooks may contain personal financial data. Do **not** copy real values
+(amounts, holdings, totals, account details) into source code, tests,
+documentation, commit messages, or logs. Tests must use synthetic sample data
+only.
 
 ## Schedules
 
 | Folder                     | Schedule                | Status      | Description                                                                 |
 | -------------------------- | ----------------------- | ----------- | --------------------------------------------------------------------------- |
-| [`ScheduleFA/`](ScheduleFA/) | Schedule FA (Foreign Assets) | ✅ Available | Per-lot dividend contribution from a dividend schedule and a stock ledger. |
+| [`ScheduleFA/`](ScheduleFA/) | Schedule FA (Foreign Assets) | ✅ Available | Per-lot dividend contribution, plus CSV generation for Schedule FA section A3. |
 | `ScheduleCG/`              | Schedule CG (Capital Gains)  | 🚧 Planned  | Capital-gains computation for equity/foreign holdings.                      |
 | `ScheduleOS/`              | Schedule OS (Other Sources)  | 🚧 Planned  | Interest, dividends and other income.                                       |
 

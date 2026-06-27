@@ -1,4 +1,18 @@
-# Dividend Contribution Tool
+# Schedule FA Tools
+
+Helpers for the **Schedule FA (Foreign Assets)** part of an Indian ITR. This
+folder contains two command-line tools:
+
+1. **`dividend-contribution`** — computes how much of a year's dividends each
+   stock lot contributed (per-lot dividend attribution).
+2. **`schedule-fa-csv`** — generates the CSV for **section A3 of Schedule FA**
+   (Table A3 — *financial interest in any entity*) from a per-lot Excel summary.
+   See [Schedule FA CSV generator (section A3)](#schedule-fa-csv-generator-section-a3)
+   below.
+
+---
+
+## Dividend Contribution Tool
 
 A command-line tool that computes **how much of a year's dividends each stock lot
 contributed**, based on the quantity of each lot actually held on every dividend
@@ -51,13 +65,10 @@ less afterwards. The per-lot contributions always sum back to the total dividend
 
 ## Installation
 
-Requires Python 3.9+.
-
-```bash
-pip install -r requirements.txt        # just the runtime dependency (openpyxl)
-# or, to install as a command and for development:
-pip install -e .[dev]
-```
+Requires Python 3.9+ (runtime dependency: `openpyxl`). For full setup — virtual
+environment, editable install, and dependencies — see
+[`DEVELOPER.md`](../DEVELOPER.md). The `python -m <package>` and `.cmd` forms
+below also run without installing.
 
 ---
 
@@ -185,11 +196,106 @@ Worked example (the result of running the dividend and ledger examples above):
 
 ---
 
+## Schedule FA CSV generator (section A3)
+
+The `schedule-fa-csv` tool generates the CSV for **section A3 of Schedule FA**
+(Table A3 — *financial interest in any entity*). It converts a per-lot Excel
+summary into the exact 12 columns that section A3 expects. A natural source for
+the per-lot peak/closing/dividend figures
+is the output of the dividend-contribution tool, enriched with peak/closing
+values and entity details.
+
+### Input file
+
+One row per lot/holding. Default column headers (override with `--*-col` flags;
+common aliases are auto-detected):
+
+| Column                  | Meaning                                              |
+| ----------------------- | ---------------------------------------------------- |
+| `Date`                  | Date the interest/holding was acquired               |
+| `Lot number`            | Lot identifier (for reference)                       |
+| `Initial value`         | Cost/initial value of the investment (INR)           |
+| `Peak value in INR`     | Peak value during the period (INR)                   |
+| `Closing value in INR`  | Closing value at period end (INR)                    |
+| `Dividend Contribution` | Gross amount paid/credited during the period (INR)   |
+| `Sale proceeds`         | Gross proceeds from sale/redemption (INR); **optional**, defaults to 0 |
+| `Country/Region name`   | Country/Region name                                  |
+| `Country Name and Code` | Country name and ITR country code                    |
+| `Name of entity`        | Name of the entity                                   |
+| `Address of entity`     | Address of the entity                                |
+| `ZIP Code`              | ZIP/PIN code (text; leading zeros preserved)         |
+| `Nature of entity`      | Nature of the entity                                 |
+
+A `Quantity` column may be present but is ignored. Currency text (e.g.
+`₹1,00,000.00`) and lakh-style grouping are parsed transparently.
+
+> **Use the exact headers (or the template).** Headers are matched by exact name
+> first, then by alias. Aliases prefer the most specific match, but with unusual
+> headers auto-detection can still pick the wrong column. For non-standard sheets,
+> use the [input template](templates/) or pass explicit `--*-col` flags (e.g.
+> `--peak-col "Maximum INR"`). If two fields would map to the same column the tool
+> stops with an *ambiguous header mapping* error rather than emit wrong figures.
+
+> **Templates:** ready-to-use header files live in [`templates/`](templates/):
+> `fa_input_template.xlsx` (empty input sheet with the expected headers, ZIP
+> column pre-formatted as text) and `fa_output_headers.csv` (the exact output
+> columns). **Copy the input template out of the repo before entering real data**
+> so personal information never lands in git. Regenerate with
+> `python templates/generate_templates.py`.
+
+### Output CSV
+
+One row per holding, with these columns in order:
+
+```
+Country/Region name, Country Name and Code, Name of entity, Address of entity,
+ZIP Code, Nature of entity, Date of acquiring the interest,
+Initial value of the investment, Peak value of investment during the Period,
+Closing balance,
+Total gross amount paid/credited with respect to the holding during the period,
+Total gross proceeds from sale or redemption of investment during the period
+```
+
+Amounts are written as **whole rupees** (no `₹` symbol or thousands separators,
+so the file parses cleanly as CSV). The acquisition date defaults to `DD-MM-YY`
+(configurable with `--date-format`). The file is UTF-8 (with BOM) for clean
+opening in Excel, and text fields are guarded against spreadsheet formula
+injection.
+
+> **Rounding (no drift):** each numeric column is rounded to whole rupees using
+> **largest-remainder (Hamilton) rounding** — every value is floored, then the
+> rupees lost to flooring are handed back to the rows with the largest fractional
+> parts. This guarantees the column sums **exactly** to the column total rounded
+> to the nearest rupee, so the reported figures never drift away from the source
+> total the way independent per-row rounding would.
+>
+> *Example:* three lots of ₹33.34, ₹33.33, ₹33.33 (total ₹100) are written as
+> **34, 33, 33** — summing to 100. Rounding each value independently would give
+> 33 + 33 + 33 = **99**, losing a rupee against the ₹100 total.
+
+### Usage
+
+```bash
+# Installed console script:
+schedule-fa-csv --input holdings.xlsx --output schedule_fa.csv
+
+# Python module (no install needed):
+python -m schedule_fa_csv --input holdings.xlsx --output schedule_fa.csv
+
+# Windows wrapper:
+schedule-fa-csv.cmd --input holdings.xlsx --output schedule_fa.csv
+```
+
+Run `python -m schedule_fa_csv --help` for all options, including `--sheet`,
+`--date-format`, and per-column override flags (e.g. `--peak-col`, `--zip-col`).
+
+---
+
 ## Project layout
 
 ```
 .
-├── src/dividend_contribution/   # modular package
+├── src/dividend_contribution/   # dividend-contribution tool
 │   ├── parsing.py               # value/date parsing helpers
 │   ├── headers.py               # header detection & column resolution
 │   ├── readers.py               # read dividend / ledger workbooks
@@ -197,11 +303,18 @@ Worked example (the result of running the dividend and ledger examples above):
 │   ├── computation.py           # orchestration (compute -> Result)
 │   ├── writer.py                # write the result workbook
 │   └── cli.py                   # argparse command-line interface
+├── src/schedule_fa_csv/         # schedule-fa-csv tool (Schedule FA section A3 CSV)
+│   ├── reader.py                # read the per-lot input workbook
+│   ├── writer.py                # write the 12-column Schedule FA CSV
+│   └── cli.py                   # argparse command-line interface
+├── templates/                   # header-only input/output templates (safe to copy)
+│   └── generate_templates.py    # regenerates the template files
 ├── tests/                       # pytest suite + sample-data generator
 │   └── generate_sample_data.py  # writes sample .xlsx to gitignored tests/.tmp_data/
 ├── pyproject.toml               # packaging + pytest config
 ├── requirements.txt
-├── dividend-contribution.cmd    # Windows wrapper
+├── dividend-contribution.cmd    # Windows wrapper (dividend tool)
+├── schedule-fa-csv.cmd          # Windows wrapper (CSV generator)
 └── AGENTS.md                    # conventions for agents/contributors
 ```
 
@@ -209,12 +322,9 @@ Worked example (the result of running the dividend and ledger examples above):
 
 ## Running the tests
 
-```bash
-python -m pytest
-```
-
-The suite covers parsing, header detection, allocation maths (including partial
-sells and over-sell warnings), workbook reading, and an end-to-end CLI run that
-verifies the output workbook and that contributions foot to the dividend total.
-Sample workbooks are generated automatically before the tests run, into the
-gitignored `tests/.tmp_data/` folder (they are not committed).
+Run the suite with `python -m pytest` — see
+[`DEVELOPER.md`](../DEVELOPER.md#5-run-the-tests) for details. It covers parsing,
+header detection, allocation maths (including partial sells and over-sell
+warnings), workbook reading, CSV generation, and end-to-end CLI runs that verify
+outputs foot to their totals. Sample workbooks are generated automatically
+(into the gitignored `tests/.tmp_data/`) before the tests run.

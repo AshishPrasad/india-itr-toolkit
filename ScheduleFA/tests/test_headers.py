@@ -48,6 +48,21 @@ def test_resolve_prefers_exact_over_alias():
     assert resolve_column(header_map, DIV_SPECS["rate"]) == 3
 
 
+def test_resolve_specific_alias_beats_broad_on_earlier_column():
+    # "Trade Date" (col 1) contains the broad "date" token, but the specific
+    # "acquisition date" alias must win and resolve to "Acquisition Date" (col 2).
+    header_map = {"tradedate": 1, "acquisitiondate": 2}
+    spec = (None, "Date", ["acquisition date", "date"])
+    assert resolve_column(header_map, spec) == 2
+
+
+def test_resolve_broad_alias_still_matches_when_only_option():
+    # With no more-specific column, the broad token is an acceptable fallback.
+    header_map = {"tradedate": 1}
+    spec = (None, "Date", ["acquisition date", "date"])
+    assert resolve_column(header_map, spec) == 1
+
+
 def test_explicit_override_takes_priority():
     header_map = {"mydate": 5, "date": 1}
     spec = ("My Date", "Date", ["date"])

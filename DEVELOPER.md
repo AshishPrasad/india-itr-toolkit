@@ -2,10 +2,8 @@
 
 How to set up, run, test, and contribute to the **India ITR Toolkit**.
 
-> **Privacy:** Real workbooks may contain personal financial data. Never commit
-> real `.xlsx` files or copy real values (amounts, holdings, totals, account
-> details) into code, tests, docs, commit messages, or logs. Use the synthetic
-> sample data generated under each tool's `tests/.tmp_data/` only.
+> **Privacy:** Follow the repo [privacy policy](README.md#privacy) — never put
+> real financial data into code, tests, docs, or commit messages.
 
 ## Prerequisites
 
@@ -55,22 +53,14 @@ For runtime only (just `openpyxl`):
 pip install -r requirements.txt
 ```
 
-## 4. Run the tool
+## 4. Run the tools
 
-Any of these work once installed:
-
-```bash
-# Installed console script:
-dividend-contribution --dividends dividends.xlsx --stocks ledger.xlsx --output out.xlsx
-
-# Python module (no install needed if PYTHONPATH includes src/):
-python -m dividend_contribution --dividends dividends.xlsx --stocks ledger.xlsx --output out.xlsx
-
-# Windows convenience launcher (sets PYTHONPATH, no install needed):
-dividend-contribution.cmd --dividends dividends.xlsx --stocks ledger.xlsx --output out.xlsx
-```
-
-See `--help` for all options, and `ScheduleFA/README.md` for input file formats.
+Each tool's invocation, flags, and input/output formats are documented in the
+schedule's README — see [`ScheduleFA/README.md`](ScheduleFA/README.md) (the
+`dividend-contribution` and `schedule-fa-csv` sections). Once installed, the
+console scripts (`dividend-contribution`, `schedule-fa-csv`), the
+`python -m <package>` form, and the `.cmd` wrappers all work; pass `--help` for
+the full option list.
 
 ## 5. Run the tests
 
@@ -88,16 +78,13 @@ python tests/generate_sample_data.py
 
 ## Project layout (per schedule)
 
-```
-ScheduleFA/
-├── src/dividend_contribution/   # modular package (one responsibility per module)
-├── tests/                       # pytest suite (+ generated tests/.tmp_data/, gitignored)
-├── pyproject.toml               # packaging + pytest config (src layout)
-├── requirements.txt             # runtime dependency (openpyxl)
-├── dividend-contribution.cmd    # Windows launcher (batch script, not an .exe)
-├── README.md                    # tool usage
-└── AGENTS.md                    # coding & testing conventions
-```
+Each schedule folder is a self-contained project: one or more packages under
+`src/`, a `tests/` suite (sample data generated into the gitignored
+`tests/.tmp_data/`), optional `templates/`, plus `pyproject.toml`,
+`requirements.txt`, `README.md`, `AGENTS.md`, and Windows `.cmd` launchers.
+
+See the schedule's own README for the full, up-to-date file tree — e.g.
+[`ScheduleFA/README.md` › Project layout](ScheduleFA/README.md#project-layout).
 
 ## Conventions
 
@@ -107,7 +94,8 @@ ScheduleFA/
   detection, and allocation that reconciles to the total.
 - Add or update tests for any behavior change; keep tests hermetic (synthetic
   data, `tmp_path` for outputs).
-- New schedules go in their own top-level folder following the same structure.
+- New schedules go in their own top-level folder (see the repo conventions in
+  the [root README](README.md#conventions)).
 
 ## Git workflow
 

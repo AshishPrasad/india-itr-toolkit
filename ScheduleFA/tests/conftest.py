@@ -31,3 +31,8 @@ def stocks_path(data_dir):
 @pytest.fixture
 def stocks_renamed_path(data_dir):
     return os.path.join(data_dir, "stocks_renamed.xlsx")
+
+
+@pytest.fixture
+def fa_input_path(data_dir):
+    return os.path.join(data_dir, "fa_input_sample.xlsx")

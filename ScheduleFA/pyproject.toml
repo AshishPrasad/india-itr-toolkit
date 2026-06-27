@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "dividend-contribution"
+name = "schedule-fa-tools"
 version = "1.0.0"
-description = "Compute per-lot dividend contribution from a dividend file and a stock-transaction ledger."
+description = "Schedule FA helpers for Indian ITR: per-lot dividend contribution and Table A3 CSV generation."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
@@ -16,6 +16,7 @@ dev = ["pytest>=7.0"]
 
 [project.scripts]
 dividend-contribution = "dividend_contribution.cli:main"
+schedule-fa-csv = "schedule_fa_csv.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
