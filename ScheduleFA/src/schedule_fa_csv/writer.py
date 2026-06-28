@@ -21,7 +21,7 @@ HEADERS = [
 # Leading characters a spreadsheet may interpret as the start of a formula.
 _FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
 
-_DEFAULT_DATE_FORMAT = "%d-%m-%y"
+_DEFAULT_DATE_FORMAT = "%Y-%m-%d"
 
 
 def _sanitize(value):

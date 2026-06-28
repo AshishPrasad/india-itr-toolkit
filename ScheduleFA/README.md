@@ -257,7 +257,7 @@ Total gross proceeds from sale or redemption of investment during the period
 ```
 
 Amounts are written as **whole rupees** (no `₹` symbol or thousands separators,
-so the file parses cleanly as CSV). The acquisition date defaults to `DD-MM-YY`
+so the file parses cleanly as CSV). The acquisition date defaults to `YYYY-MM-DD`
 (configurable with `--date-format`). The file is UTF-8 (with BOM) for clean
 opening in Excel, and text fields are guarded against spreadsheet formula
 injection.

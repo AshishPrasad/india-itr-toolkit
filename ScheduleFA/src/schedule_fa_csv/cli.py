@@ -24,7 +24,7 @@ def build_parser():
     parser.add_argument("--sheet", help="Sheet name in the input file (default: first)")
     parser.add_argument(
         "--date-format",
-        default="%d-%m-%y",
+        default="%Y-%m-%d",
         help="strftime format for the acquisition date column",
     )
 

@@ -195,7 +195,7 @@ def test_write_csv_headers_and_values(fa_input_path, tmp_path):
     with open(str(out), newline="", encoding="utf-8-sig") as fh:
         rows = list(csv.reader(fh))
     assert rows[0] == HEADERS                 # exact header order
-    assert rows[1][6] == "10-05-23"           # default DD-MM-YY date
+    assert rows[1][6] == "2023-05-10"         # default YYYY-MM-DD date
     assert rows[1][7] == "100000"             # initial value (whole rupees)
     assert rows[1][9] == "130000"             # closing balance
     assert rows[1][11] == "0"                 # proceeds (not sold)
@@ -205,10 +205,10 @@ def test_write_csv_headers_and_values(fa_input_path, tmp_path):
 def test_write_csv_custom_date_format(fa_input_path, tmp_path):
     holdings = read_holdings(fa_input_path)
     out = tmp_path / "fa.csv"
-    write_csv(str(out), holdings, date_format="%Y-%m-%d")
+    write_csv(str(out), holdings, date_format="%d-%m-%Y")
     with open(str(out), newline="", encoding="utf-8-sig") as fh:
         rows = list(csv.reader(fh))
-    assert rows[1][6] == "2023-05-10"
+    assert rows[1][6] == "10-05-2023"
 
 
 def test_write_csv_dividend_column_foots_to_total(tmp_path):
